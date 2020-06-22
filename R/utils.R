@@ -5,6 +5,14 @@ standardise <- function(x){
   return(s)
 }
 
+df.std <- function(df){
+  apply(df, 2, function(x){
+    z <- as.numeric(x)
+    standardise(z)
+    }
+  )
+}
+
 series.plot <- function(dataframe){
   df <- dataframe
   p <- plot_ly()
@@ -70,15 +78,31 @@ adfdf <- function(df){
     tseries::adf.test(x)$p.value
       }
     )
-  ind <- ifelse(pv<0.05, 1, 0) %>% as.vector()
+  ind <- ifelse(pv<0.05 & is.na(pv)==FALSE, 1, 0) %>% as.vector
   return(ind)
 }
 
 crop <- function(df){
   cs <- colSums(df) %>% as.vector()
   ind <- which(cs < 0.1*mean(cs))
-  #csb <- colSums(ifelse(df>0,1,0)) %>% as.vector
-  #cb_ind <- which(csb < 0.5*mean(csb))
-  #ind <- union(c_ind, cb_ind)
   return(df[,-ind])
+}
+
+diff <- function(df, adf){
+  ind <- which(adf==0)
+  temp <- df[,c(ind)]
+  temp <- apply(temp, 2, function(x){
+    x-lag(x)
+   }
+  )
+  df <- df[,-c(ind)]
+  df <- cbind(df, temp)
+  return(df)
+}
+
+elnet.best <- function(caret_fit) {
+  best <- which(rownames(caret_fit$results) == rownames(caret_fit$bestTune))
+  best_result <- caret_fit$results[best, ]
+  rownames(best_result) <- NULL
+  return(best_result)
 }
