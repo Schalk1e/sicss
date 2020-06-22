@@ -31,3 +31,54 @@ hist.plot <- function(dataframe){
   return(p)
 }
 
+cormat <- function(x){
+  corr <- round(cor(x), 1)
+  p.mat <- cor_pmat(x)
+  corr.plot <- ggcorrplot(
+        corr, hc.order = TRUE, type = "lower", outline.col = "white",
+        p.mat = p.mat
+        )
+  obj <- ggplotly(corr.plot)
+  return(obj)
+}
+
+corvec <- function(x, y){
+  cc <- apply(y, 2, function(i){
+    obj <- cor.test(x, i, method = 'pearson', conf.level=0.9)
+    mean <- obj$estimate
+    int <- obj$estimate - obj$conf.int[1]
+    sig <- ifelse(obj$p.value<0.05, 1, 0)
+    c(mean, int, sig)
+  })
+  cc <- t(cc)
+  colnames(cc) <- c("coefficient", "interval", "sig")
+  p <- plot_ly(data = as.data.frame(cc), x = row.names(cc), y = ~coefficient, type = 'scatter', mode = 'markers', error_y = ~list(array = interval, color = '#000000'), 
+  opacity = 0.5,
+  marker = list(
+      color = ~I(1-sig),
+      size = 50,
+      line = list(
+        color = 'rgb(0,0,0)',
+        width = 5
+      )
+    ))
+return(p)
+}
+
+adfdf <- function(df){
+  pv <- apply(df, 2, function(x){
+    tseries::adf.test(x)$p.value
+      }
+    )
+  ind <- ifelse(pv<0.05, 1, 0) %>% as.vector()
+  return(ind)
+}
+
+crop <- function(df){
+  cs <- colSums(df) %>% as.vector()
+  ind <- which(cs < 0.1*mean(cs))
+  #csb <- colSums(ifelse(df>0,1,0)) %>% as.vector
+  #cb_ind <- which(csb < 0.5*mean(csb))
+  #ind <- union(c_ind, cb_ind)
+  return(df[,-ind])
+}
