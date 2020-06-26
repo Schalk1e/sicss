@@ -1,11 +1,13 @@
 '%ni%' <- Negate('%in%')
 
 standardise <- function(x){
+  #Standardise a vector.
   s <- (x-mean(x))/sd(x)
   return(s)
 }
 
 df.std <- function(df){
+  #Apply standardisation across dataframe. 
   apply(df, 2, function(x){
     z <- as.numeric(x)
     standardise(z)
@@ -14,6 +16,7 @@ df.std <- function(df){
 }
 
 series.plot <- function(dataframe){
+  #Return plotly plot for dataframe of time series with 'date' column. 
   df <- dataframe
   p <- plot_ly()
   palette <- c('rgb(218,165,32)', 'rgb(0,0,0)', 'rgb(100,100,100)', 'rgb(137,207,240)', 'rgb(128,128,128)') 
@@ -27,6 +30,7 @@ series.plot <- function(dataframe){
 }
 
 hist.plot <- function(dataframe){
+  #Render overlaid plotly histogram from dataframe. 
   df <- dataframe
   p <- plot_ly()
   colNames <- colnames(df[, !(colnames(df) %in% "date")])
@@ -40,6 +44,7 @@ hist.plot <- function(dataframe){
 }
 
 cormat <- function(x){
+  #Return interactive cross-correlation matrix. 
   corr <- round(cor(x), 1)
   p.mat <- cor_pmat(x)
   corr.plot <- ggcorrplot(
@@ -51,6 +56,7 @@ cormat <- function(x){
 }
 
 corvec <- function(x, y){
+  #Return visualisation of correlation of x to matrix y. 
   cc <- apply(y, 2, function(i){
     obj <- cor.test(x, i, method = 'pearson', conf.level=0.9)
     mean <- obj$estimate
@@ -74,6 +80,7 @@ return(p)
 }
 
 adfdf <- function(df){
+  #Apply augmented Dickey-Fuller test to dataframe of time series. 
   pv <- apply(df, 2, function(x){
     tseries::adf.test(x)$p.value
       }
@@ -83,12 +90,14 @@ adfdf <- function(df){
 }
 
 crop <- function(df){
+  #Remove marginal characters with contributions less than 10% of the mean contribution.
   cs <- colSums(df) %>% as.vector()
   ind <- which(cs < 0.1*mean(cs))
   return(df[,-ind])
 }
 
 diff <- function(df, adf){
+  #Difference sequences in dataframe with adf score of 0 from adfdf function.
   ind <- which(adf==0)
   temp <- df[,c(ind)]
   temp <- apply(temp, 2, function(x){
@@ -101,6 +110,7 @@ diff <- function(df, adf){
 }
 
 elnet.best <- function(caret_fit) {
+  #Return best from from glmnet object. 
   best <- which(rownames(caret_fit$results) == rownames(caret_fit$bestTune))
   best_result <- caret_fit$results[best, ]
   rownames(best_result) <- NULL
