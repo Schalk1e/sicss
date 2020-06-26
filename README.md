@@ -1,4 +1,4 @@
-# SICCS Stellenbosch: Introduction to Time-Series Modeling in R
+# SICSS Stellenbosch: Introduction to Time-Series Modeling in R
 
 ## Description
 Repo containing the code used for the SICSS Stellenbosch session on introductory time-series modeling in R. 
